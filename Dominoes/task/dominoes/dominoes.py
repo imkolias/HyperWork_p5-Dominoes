@@ -4,46 +4,47 @@ import random
 dominoes_list = []
 player_dlist = []
 ai_dlist = []
-first_player = ""
+d_shake = []
 
 
 def create_domino_set():
-    for a in range(7):
-        for b in range(7):
-            if [b, a] not in dominoes_list:
-                dominoes_list.append([a, b])
-
+    global dominoes_list
+    dominoes_list = [[a, b] for a in range(7) for b in range(a, 7)]
     random.shuffle(dominoes_list)
 
 
 def split_dominoes():
-    for a in range(7):
-        player_dlist.append(dominoes_list[a])
-        dominoes_list.pop(a)
-        ai_dlist.append(dominoes_list[a])
-        dominoes_list.pop(a)
+    global dominoes_list
+    global player_dlist
+    global ai_dlist
+    player_dlist = dominoes_list[0:7]
+    ai_dlist = dominoes_list[7:14]
+    dominoes_list = dominoes_list[14:]
     player_dlist.sort()
     ai_dlist.sort()
 
 
-create_domino_set()
-split_dominoes()
-
 def first_player():
     global player_dlist
     global ai_dlist
+    global d_shake
     if player_dlist[-1] > ai_dlist[-1]:
-        plai_status = "computer"
+        pstatus = "computer"
         d_shake = [player_dlist[-1]]
         player_dlist.pop()
     else:
-        plai_status = "player"
+        pstatus = "player"
         d_shake = [ai_dlist[-1]]
         ai_dlist.pop()
+    return pstatus
+
+
+create_domino_set()
+split_dominoes()
+plai_status = first_player()
 
 print("Stock pieces:", dominoes_list)
 print("Computer pieces:", ai_dlist)
 print("Player pieces:", player_dlist)
 print("Domino snake:", d_shake)
-
-print("Status:",plai_status)
+print("Status:", plai_status)

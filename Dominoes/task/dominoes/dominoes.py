@@ -8,9 +8,9 @@ d_shake = []
 
 
 def create_domino_set():
-    global dominoes_list
-    dominoes_list = [[a, b] for a in range(7) for b in range(a, 7)]
-    random.shuffle(dominoes_list)
+    d_list = [[a, b] for a in range(7) for b in range(a, 7)]
+    random.shuffle(d_list)
+    return d_list
 
 
 def split_dominoes():
@@ -39,7 +39,7 @@ def first_player():
     return pstatus
 
 
-create_domino_set()
+dominoes_list = create_domino_set()
 split_dominoes()
 plai_status = first_player()
 

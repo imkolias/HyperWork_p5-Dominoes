@@ -30,21 +30,34 @@ def first_player():
     global d_shake
     if player_dlist[-1] > ai_dlist[-1]:
         pstatus = "computer"
-        d_shake = [player_dlist[-1]]
+        d_shake = player_dlist[-1]
         player_dlist.pop()
     else:
         pstatus = "player"
-        d_shake = [ai_dlist[-1]]
+        d_shake = ai_dlist[-1]
         ai_dlist.pop()
     return pstatus
 
+def print_player_dominoes():
+    for n in range(len(player_dlist)):
+        print(f"{n+1}:{player_dlist[n]}")
 
 dominoes_list = create_domino_set()
 split_dominoes()
 plai_status = first_player()
 
-print("Stock pieces:", dominoes_list)
-print("Computer pieces:", ai_dlist)
-print("Player pieces:", player_dlist)
-print("Domino snake:", d_shake)
-print("Status:", plai_status)
+
+print("======================================================================")
+print("Stock size:", len(dominoes_list))
+print("Computer pieces:", len(ai_dlist))
+print("")
+print(d_shake)
+print("")
+print("Your pieces:")
+print_player_dominoes()
+
+print("")
+if plai_status == "computer":
+    print("Status: Computer is about to make a move. Press Enter to continue...")
+if plai_status == "player":
+    print("Status: It's your turn to make a move. Enter your command.")

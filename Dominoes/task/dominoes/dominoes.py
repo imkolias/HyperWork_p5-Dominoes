@@ -1,11 +1,7 @@
 # Write your code here
 import random
 
-dominoes_list = []
-player_dlist = []
-ai_dlist = []
-d_shake = []
-pstatus = ""
+dominoes_list, player_dlist, ai_dlist, d_shake, r_list, t_list = [], [], [], [], [], []
 
 
 def create_domino_set():
@@ -27,7 +23,6 @@ def first_player():
     global player_dlist
     global ai_dlist
     global d_shake
-    global pstatus
     if player_dlist[-1] > ai_dlist[-1]:
         pstatus = "computer"
         d_shake = [player_dlist[-1]]
@@ -41,7 +36,7 @@ def first_player():
 
 def print_player_dominoes():
     for n in range(len(player_dlist)):
-        print(f"{n+1}:{player_dlist[n]}")
+        print(f"{n + 1}:{player_dlist[n]}")
 
 
 def print_ontable():
@@ -57,15 +52,15 @@ def print_game_endmsg(msg):
 
 def check_user_input():
     while True:
-        input_data = input()
-        if input_data.isdigit():
-            input_data = int(input_data)
+        try:
+            input_data = int(input())
+        except ValueError:
+            print("Invalid input. Please try again.")
+        else:
             if -len(player_dlist) <= input_data <= len(player_dlist):
                 return input_data
             else:
-                print("Invalid input. Please try again.")
-        else:
-            print("Invalid input. Please try again.")
+                print("2.Invalid input. Please try again.")
 
 
 def print_table():
@@ -89,19 +84,64 @@ game_run = True
 while game_run:
 
     print_table()
-
+    # AI turn
     if plai_status == "computer":
-        print("Status: Computer is about to make a move. Press Enter to continue...")
-        input()
-        ai_choice = random.choice(ai_dlist)
+        input("Status: Computer is about to make a move. Press Enter to continue...")
 
-        if random.randint(1, 2) == 1:
-            d_shake.append(ai_choice)
+        print("-AI Dominoes-", ai_dlist)
+        print("->CORNERS<- ", d_shake[0][0], d_shake[len(d_shake)-1][1])
+        for n in ai_dlist:
+            if n[0] == d_shake[0][0] or n[0] == d_shake[len(d_shake)-1][1] or n[1] == d_shake[0][0] or n[1] == d_shake[len(d_shake)-1][1]:
+                r_list.append(n)
+
+        # if no right dominoes in the AI List
+        if not r_list:
+            ai_dlist.append(dominoes_list[0])
+            dominoes_list.remove(dominoes_list[0])
+            plai_status = "player"
+        # if AI have dominoe
         else:
-            d_shake.insert(0, ai_choice)
+            r_list.sort(reverse=True)
+            print("VARiants ->", r_list)
+            # if mirrored item on the desk
+            if d_shake[0][0] == d_shake[len(d_shake)-1][1]:
+                if random.randint(0, 1) == 0:  # left side of the snake
+                    if r_list[0][0] != d_shake[0][0]:
+                        d_shake.insert(0, [r_list[0][1], r_list[0][0]])
+                        print("== L-LS >> ", [r_list[0][1], r_list[0][0]])
+                    else:
+                        d_shake.append([r_list[0][0], r_list[0][1]])
+                        print("== R-LS NO SWITCH>> ", [r_list[0][0], r_list[0][1]])
+                    ai_dlist.remove(r_list[0])
+                else:  # on the right side of the snake
+                    if r_list[0][1] == d_shake[len(d_shake)-1][1]:
+                        d_shake.append([r_list[0][1], r_list[0][0]])
+                        print(t_list, "<< RS-R ==")
+                    else:
+                        d_shake.append([r_list[0][0], r_list[0][1]])
+                        print(t_list, "<< RS-R NO SWITCH")
+                    ai_dlist.remove(r_list[0])
+                    print("AI-REMOVED->", r_list[0])
 
-        ai_dlist.remove(ai_choice)
+            else:
+                if r_list[0][0] == d_shake[0][0]:
+                    d_shake.insert(0, [r_list[0][1], r_list[0][0]])
+                    print("LEFT REV")
+                elif r_list[0][1] == d_shake[0][0]:
+                    d_shake.insert(0, [r_list[0][0], r_list[0][1]])
+                elif r_list[0][1] == d_shake[len(d_shake) - 1][1]:
+                    d_shake.append([r_list[0][1], r_list[0][0]])
+                    print("RIGHT REV")
+                elif r_list[0][0] == d_shake[len(d_shake) - 1][1]:
+                    d_shake.append([r_list[0][0], r_list[0][1]])
+
+                # d_shake.append(t_list[0])
+                ai_dlist.remove(r_list[0])
+
+        r_list.clear()
+
         plai_status = "player"
+    # Player Turn
     else:
         print("Status: It's your turn to make a move. Enter your command.")
         cmd = check_user_input()
@@ -118,6 +158,7 @@ while game_run:
             player_dlist.remove(sel_dominoe)
             plai_status = "computer"
 
+    # end of game conditions check
     if ai_dlist == [] and player_dlist == []:
         print_table()
         print_game_endmsg("The game is over. It's a draw!")

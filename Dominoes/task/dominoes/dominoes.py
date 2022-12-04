@@ -50,9 +50,10 @@ def print_game_endmsg(msg):
     print("Status:", msg)
 
 
-def check_user_input():
+def check_user_input(msg=""):
     while True:
         try:
+            if msg!="": print(msg)
             input_data = int(input())
         except ValueError:
             print("Invalid input. Please try again.")
@@ -60,7 +61,7 @@ def check_user_input():
             if -len(player_dlist) <= input_data <= len(player_dlist):
                 return input_data
             else:
-                print("2.Invalid input. Please try again.")
+                print("Invalid input. Please try again.")
 
 def get_dominoes_variants(ai_or_player_dlist):
     temp_list = []
@@ -74,7 +75,6 @@ def get_dominoes_variants(ai_or_player_dlist):
 def run_dominoe_magnet(dom, board_snake):
   r_vars = [[-1,-1]]
   l_vars = [[-1,-1]]
-  print(board_snake,"ssssh")
   for item in dom:
     if board_snake[0][1] == item[0]:
       r_vars.append(item)
@@ -116,15 +116,14 @@ while game_run:
     if plai_status == "computer":
         input("Status: Computer is about to make a move. Press Enter to continue...")
 
-        print("-AI Dominoes-", ai_dlist)
-
         # get variants from current list of player dominoes
         t_list, lr_flag = run_dominoe_magnet(ai_dlist, [[d_shake[0][0], d_shake[len(d_shake) - 1][1]]])
 
         # if no right dominoes in the AI List
         if t_list == [-1, -1]:
-            ai_dlist.append(dominoes_list[0])
-            dominoes_list.remove(dominoes_list[0])
+            if len(dominoes_list)>0:
+                ai_dlist.append(dominoes_list[0])
+                dominoes_list.remove(dominoes_list[0])
             plai_status = "player"
         # if AI have dominoe
         else:
@@ -134,55 +133,70 @@ while game_run:
                 d_shake.append(t_list)
             for item in ai_dlist:
                 if item == t_list: ai_dlist.remove(item)
-                if [item[1], item[0]] == t_list: ai_dlist.remove(item)
+                elif [item[1], item[0]] == t_list: ai_dlist.remove(item)
         plai_status = "player"
     # Player Turn
     else:
         print("Status: It's your turn to make a move. Enter your command.")
         r_list = get_dominoes_variants(player_dlist)
-        print("PLAYER VARS ->", r_list)
 
         cmd = check_user_input()
         if cmd == 0:
-            player_dlist.append(dominoes_list[0])
-            dominoes_list.remove(dominoes_list[0])
+            if len(dominoes_list)>0:
+                player_dlist.append(dominoes_list[0])
+                dominoes_list.remove(dominoes_list[0])
             plai_status = "computer"
         else:
             sel_dominoe = player_dlist[abs(cmd) - 1]
-            while sel_dominoe not in r_list:
-                print("NOT IN LIST, PLEASE TRY AGAIN", r_list)
-                cmd = check_user_input()
+            pass_mode = 0
+            while (sel_dominoe not in r_list):
+            # while pass_mode == 0:
+                cmd = check_user_input("Illegal move. Please try again.")
+
+                if cmd == 0:
+                    if len(dominoes_list) > 0:
+                        player_dlist.append(dominoes_list[0])
+                        dominoes_list.remove(dominoes_list[0])
+                        pass_mode = 1
+                    plai_status = "computer"
+
                 sel_dominoe = player_dlist[abs(cmd) - 1]
-                if sel_dominoe in r_list:
-
-                    print("HERE")
-
+                # if sel_dominoe in r_list: pass_mode == 1
 
             if cmd > 0:
-                d_shake.append(sel_dominoe)
+                if sel_dominoe[0] == d_shake[len(d_shake) - 1][1]:
+                    d_shake.append([sel_dominoe[0], sel_dominoe[1]])
+                elif sel_dominoe[1] == d_shake[len(d_shake) - 1][1]:
+                    d_shake.append([sel_dominoe[1], sel_dominoe[0]])
             if cmd < 0:
-                d_shake.insert(0, sel_dominoe)
+                if sel_dominoe[0] == d_shake[0][0]:
+                        d_shake.insert(0, [sel_dominoe[1], sel_dominoe[0]])
+                elif sel_dominoe[1] == d_shake[0][0]:
+                        d_shake.insert(0, [sel_dominoe[0], sel_dominoe[1]])
             player_dlist.remove(sel_dominoe)
-            r_list.clear()
             plai_status = "computer"
+
+
 
     # end of game conditions check
     if ai_dlist == [] and player_dlist == []:
         print_table()
         print_game_endmsg("The game is over. It's a draw!")
         game_run = False
-    elif not ai_dlist:
+    elif ai_dlist == []:
         print_table()
         print_game_endmsg("The game is over. The computer won!")
         game_run = False
-    elif not player_dlist:
+    elif player_dlist == []:
         print_table()
         print_game_endmsg("The game is over. You won!")
         game_run = False
-    elif d_shake[0][0] == d_shake[len(d_shake)-1][1]:
+
+    if d_shake[0][0] == d_shake[len(d_shake)-1][1] and game_run != False:
         counter = 0
         for n in d_shake:
-            counter += n.count(1)
+            counter += n.count(d_shake[0][0])
         if counter == 8:
-            print_game_endmsg("The game is over. You won!")
+            print_table()
+            print_game_endmsg("The game is over. It's a draw!")
             game_run = False

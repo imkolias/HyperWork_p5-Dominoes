@@ -62,6 +62,14 @@ def check_user_input():
             else:
                 print("2.Invalid input. Please try again.")
 
+def get_dominoes_variants(ai_or_player_dlist):
+
+    temp_list = []
+    for n in ai_or_player_dlist:
+        if n[0] == d_shake[0][0] or n[0] == d_shake[len(d_shake) - 1][1] or n[1] == d_shake[0][0] or n[1] == \
+                d_shake[len(d_shake) - 1][1]:
+            temp_list.append(n)
+    return temp_list
 
 def print_table():
     print("======================================================================")
@@ -90,9 +98,12 @@ while game_run:
 
         print("-AI Dominoes-", ai_dlist)
         print("->CORNERS<- ", d_shake[0][0], d_shake[len(d_shake)-1][1])
-        for n in ai_dlist:
-            if n[0] == d_shake[0][0] or n[0] == d_shake[len(d_shake)-1][1] or n[1] == d_shake[0][0] or n[1] == d_shake[len(d_shake)-1][1]:
-                r_list.append(n)
+        # for n in ai_dlist:
+        #     if n[0] == d_shake[0][0] or n[0] == d_shake[len(d_shake)-1][1] or n[1] == d_shake[0][0] or n[1] == d_shake[len(d_shake)-1][1]:
+        #         r_list.append(n)
+
+        # get variants from current list of player dominoes
+        r_list = get_dominoes_variants(ai_dlist)
 
         # if no right dominoes in the AI List
         if not r_list:
@@ -103,59 +114,66 @@ while game_run:
         else:
             r_list.sort(reverse=True)
             print("VARiants ->", r_list)
-            # if mirrored item on the desk
+            # if DOUBLE Dominoe corner values
             if d_shake[0][0] == d_shake[len(d_shake)-1][1]:
                 if random.randint(0, 1) == 0:  # left side of the snake
-                    if r_list[0][0] != d_shake[0][0]:
+                    if r_list[0][0] == d_shake[0][0]:
                         d_shake.insert(0, [r_list[0][1], r_list[0][0]])
-                        print("== L-LS >> ", [r_list[0][1], r_list[0][0]])
+                        # print("== L-LS >> ", [r_list[0][1], r_list[0][0]])
                     else:
                         d_shake.append([r_list[0][0], r_list[0][1]])
-                        print("== R-LS NO SWITCH>> ", [r_list[0][0], r_list[0][1]])
-                    ai_dlist.remove(r_list[0])
+                        # print("== R-LS NO SWITCH>> ", [r_list[0][0], r_list[0][1]])
                 else:  # on the right side of the snake
                     if r_list[0][1] == d_shake[len(d_shake)-1][1]:
                         d_shake.append([r_list[0][1], r_list[0][0]])
-                        print(t_list, "<< RS-R ==")
+                        # print(t_list, "<< RS-R ==")
                     else:
                         d_shake.append([r_list[0][0], r_list[0][1]])
-                        print(t_list, "<< RS-R NO SWITCH")
-                    ai_dlist.remove(r_list[0])
-                    print("AI-REMOVED->", r_list[0])
-
+                        # print(t_list, "<< RS-R NO SWITCH")
+                ai_dlist.remove(r_list[0])
+            # if different dominoes corner values
             else:
                 if r_list[0][0] == d_shake[0][0]:
                     d_shake.insert(0, [r_list[0][1], r_list[0][0]])
-                    print("LEFT REV")
+                    # print("LEFT REV")
                 elif r_list[0][1] == d_shake[0][0]:
                     d_shake.insert(0, [r_list[0][0], r_list[0][1]])
                 elif r_list[0][1] == d_shake[len(d_shake) - 1][1]:
                     d_shake.append([r_list[0][1], r_list[0][0]])
-                    print("RIGHT REV")
+                    # print("RIGHT REV")
                 elif r_list[0][0] == d_shake[len(d_shake) - 1][1]:
                     d_shake.append([r_list[0][0], r_list[0][1]])
-
-                # d_shake.append(t_list[0])
                 ai_dlist.remove(r_list[0])
-
         r_list.clear()
-
         plai_status = "player"
     # Player Turn
     else:
         print("Status: It's your turn to make a move. Enter your command.")
+        r_list = get_dominoes_variants(player_dlist)
+        print("PLAYER VARS ->", r_list)
+
         cmd = check_user_input()
         if cmd == 0:
             player_dlist.append(dominoes_list[0])
             dominoes_list.remove(dominoes_list[0])
             plai_status = "computer"
         else:
-            sel_dominoe = player_dlist[abs(cmd)-1]
+            sel_dominoe = player_dlist[abs(cmd) - 1]
+            while sel_dominoe not in r_list:
+                print("NOT IN LIST, PLEASE TRY AGAIN", r_list)
+                cmd = check_user_input()
+                sel_dominoe = player_dlist[abs(cmd) - 1]
+                if sel_dominoe in r_list:
+
+                    print("HERE")
+
+
             if cmd > 0:
                 d_shake.append(sel_dominoe)
             if cmd < 0:
                 d_shake.insert(0, sel_dominoe)
             player_dlist.remove(sel_dominoe)
+            r_list.clear()
             plai_status = "computer"
 
     # end of game conditions check

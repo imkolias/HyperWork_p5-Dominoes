@@ -72,8 +72,9 @@ def get_dominoes_variants(ai_or_player_dlist):
 
 
 def run_dominoe_magnet(dom, board_snake):
-  r_vars = []
-  l_vars = []
+  r_vars = [[-1,-1]]
+  l_vars = [[-1,-1]]
+  print(board_snake,"ssssh")
   for item in dom:
     if board_snake[0][1] == item[0]:
       r_vars.append(item)
@@ -86,6 +87,7 @@ def run_dominoe_magnet(dom, board_snake):
 
   r_vars.sort(reverse=True)
   l_vars.sort(reverse=True)
+
   if l_vars[0] >= r_vars[0]: return (l_vars[0], 0)
   if l_vars[0] < r_vars[0]: return (r_vars[0], 1)
 
@@ -108,58 +110,31 @@ plai_status = first_player()
 # main game cycle
 game_run = True
 while game_run:
-
+    t_list = []
     print_table()
     # AI turn
     if plai_status == "computer":
         input("Status: Computer is about to make a move. Press Enter to continue...")
 
         print("-AI Dominoes-", ai_dlist)
-        print("->CORNERS<- ", d_shake[0][0], d_shake[len(d_shake)-1][1])
 
         # get variants from current list of player dominoes
-        r_list = get_dominoes_variants(ai_dlist)
+        t_list, lr_flag = run_dominoe_magnet(ai_dlist, [[d_shake[0][0], d_shake[len(d_shake) - 1][1]]])
 
         # if no right dominoes in the AI List
-        if not r_list:
+        if t_list == [-1, -1]:
             ai_dlist.append(dominoes_list[0])
             dominoes_list.remove(dominoes_list[0])
             plai_status = "player"
         # if AI have dominoe
         else:
-            r_list.sort(reverse=True)
-            print("VARiants ->", r_list)
-            # if DOUBLE Dominoe corner values
-            if d_shake[0][0] == d_shake[len(d_shake)-1][1]:
-                if random.randint(0, 1) == 0:  # left side of the snake
-                    if r_list[0][0] == d_shake[0][0]:
-                        d_shake.insert(0, [r_list[0][1], r_list[0][0]])
-                        print("== L-LS >> ", [r_list[0][1], r_list[0][0]])
-                    else:
-                        d_shake.append(r_list[0])
-                        print("== R-LS NO SWITCH>> ", [r_list[0][0], r_list[0][1]])
-                else:  # on the right side of the snake
-                    if r_list[0][1] == d_shake[len(d_shake)-1][1]:
-                        d_shake.append([r_list[0][1], r_list[0][0]])
-                        print(t_list, "<< RS-R ==")
-                    else:
-                        d_shake.append(r_list[0])
-                        print(t_list, "<< RS-R NO SWITCH")
-                ai_dlist.remove(r_list[0])
-            # if different dominoes corner values
+            if lr_flag == 0:
+                d_shake.insert(0, t_list)
             else:
-                if r_list[0][0] == d_shake[0][0]:
-                    d_shake.insert(0, [r_list[0][1], r_list[0][0]])
-                    # print("LEFT REV")
-                elif r_list[0][1] == d_shake[0][0]:
-                    d_shake.insert(0, r_list[0])
-                elif r_list[0][1] == d_shake[len(d_shake) - 1][1]:
-                    d_shake.append([r_list[0][1], r_list[0][0]])
-                    # print("RIGHT REV")
-                elif r_list[0][0] == d_shake[len(d_shake) - 1][1]:
-                    d_shake.append(r_list[0])
-                ai_dlist.remove(r_list[0])
-        r_list.clear()
+                d_shake.append(t_list)
+            for item in ai_dlist:
+                if item == t_list: ai_dlist.remove(item)
+                if [item[1], item[0]] == t_list: ai_dlist.remove(item)
         plai_status = "player"
     # Player Turn
     else:

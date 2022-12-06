@@ -3,7 +3,7 @@ import random
 
 dominoes_list, player_dlist, ai_dlist, d_shake, r_list, t_list = [], [], [], [], [], []
 weight_of_aidom = {0: 0, 1: 0, 2: 0, 3: 0, 4: 0, 5: 0, 6: 0}
-
+input_msg = ""
 
 def create_domino_set():
     global player_dlist
@@ -163,39 +163,35 @@ while game_run:
         print("Status: It's your turn to make a move. Enter your command.")
         r_list = get_dominoes_variants(player_dlist)
 
-        cmd = check_user_input()
-        if cmd == 0:
-            if len(dominoes_list) > 0:
+        flag = 0
+        while flag == 0:
+
+            cmd = check_user_input(input_msg)
+            input_msg = ""
+
+            if cmd == 0 and len(dominoes_list) > 0:
                 player_dlist.append(dominoes_list[0])
                 dominoes_list.remove(dominoes_list[0])
-            plai_status = "computer"
-        else:
-            sel_dominoe = player_dlist[abs(cmd) - 1]
-            while sel_dominoe not in r_list:
-                cmd = check_user_input("Illegal move. Please try again.")
+                plai_status = "computer"
+                flag = 1
+            else:
                 sel_dominoe = player_dlist[abs(cmd) - 1]
-
-                if cmd == 0:
-                    if len(dominoes_list) > 0:
-                        player_dlist.append(dominoes_list[0])
-                        dominoes_list.remove(dominoes_list[0])
-                        pass_mode = 1
-                        print("PASS and add", dominoes_list[0])
+                if sel_dominoe not in r_list:
+                    input_msg = "Illegal move. Please try again."
+                else:
+                    if cmd > 0:
+                        if sel_dominoe[0] == d_shake[len(d_shake) - 1][1]:
+                            d_shake.append([sel_dominoe[0], sel_dominoe[1]])
+                        elif sel_dominoe[1] == d_shake[len(d_shake) - 1][1]:
+                            d_shake.append([sel_dominoe[1], sel_dominoe[0]])
+                    if cmd < 0:
+                        if sel_dominoe[0] == d_shake[0][0]:
+                            d_shake.insert(0, [sel_dominoe[1], sel_dominoe[0]])
+                        elif sel_dominoe[1] == d_shake[0][0]:
+                            d_shake.insert(0, [sel_dominoe[0], sel_dominoe[1]])
+                    flag = 1
+                    player_dlist.remove(sel_dominoe)
                     plai_status = "computer"
-                    break
-
-            if cmd > 0:
-                if sel_dominoe[0] == d_shake[len(d_shake) - 1][1]:
-                    d_shake.append([sel_dominoe[0], sel_dominoe[1]])
-                elif sel_dominoe[1] == d_shake[len(d_shake) - 1][1]:
-                    d_shake.append([sel_dominoe[1], sel_dominoe[0]])
-            if cmd < 0:
-                if sel_dominoe[0] == d_shake[0][0]:
-                    d_shake.insert(0, [sel_dominoe[1], sel_dominoe[0]])
-                elif sel_dominoe[1] == d_shake[0][0]:
-                    d_shake.insert(0, [sel_dominoe[0], sel_dominoe[1]])
-            player_dlist.remove(sel_dominoe)
-            plai_status = "computer"
 
     # end of game conditions check
     if ai_dlist == [] and player_dlist == []:

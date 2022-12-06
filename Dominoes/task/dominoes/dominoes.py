@@ -2,6 +2,7 @@
 import random
 
 dominoes_list, player_dlist, ai_dlist, d_shake, r_list, t_list = [], [], [], [], [], []
+weight_of_aidom = {0: 0, 1: 0, 2: 0, 3: 0, 4: 0, 5: 0, 6: 0}
 
 
 def create_domino_set():
@@ -35,8 +36,8 @@ def first_player():
 
 
 def print_player_dominoes():
-    for n in range(len(player_dlist)):
-        print(f"{n + 1}:{player_dlist[n]}")
+    for num in range(len(player_dlist)):
+        print(f"{num + 1}:{player_dlist[num]}")
 
 
 def print_ontable():
@@ -53,7 +54,8 @@ def print_game_endmsg(msg):
 def check_user_input(msg=""):
     while True:
         try:
-            if msg!="": print(msg)
+            if msg != "":
+                print(msg)
             input_data = int(input())
         except ValueError:
             print("Invalid input. Please try again.")
@@ -63,33 +65,52 @@ def check_user_input(msg=""):
             else:
                 print("Invalid input. Please try again.")
 
+
 def get_dominoes_variants(ai_or_player_dlist):
     temp_list = []
-    for n in ai_or_player_dlist:
-        if n[0] == d_shake[0][0] or n[0] == d_shake[len(d_shake) - 1][1] or n[1] == d_shake[0][0] or n[1] == \
-                d_shake[len(d_shake) - 1][1]:
-            temp_list.append(n)
+    for item in ai_or_player_dlist:
+        if item[0] == d_shake[0][0] or item[0] == d_shake[len(d_shake) - 1][1] or \
+                item[1] == d_shake[0][0] or item[1] == d_shake[len(d_shake) - 1][1]:
+            temp_list.append(item)
     return temp_list
 
 
 def run_dominoe_magnet(dom, board_snake):
-  r_vars = [[-1,-1]]
-  l_vars = [[-1,-1]]
-  for item in dom:
-    if board_snake[0][1] == item[0]:
-      r_vars.append(item)
-    if board_snake[0][1] == item[1]:
-      r_vars.append([item[1], item[0]])
-    if board_snake[0][0] == item[0]:
-      l_vars.append([item[1], item[0]])
-    if board_snake[0][0] == item[1]:
-      l_vars.append(item)
+    r_vars, l_vars = [], []
 
-  r_vars.sort(reverse=True)
-  l_vars.sort(reverse=True)
+    for item in dom:
+        if board_snake[0][1] == item[0]:
+            r_vars.append(item)
+        if board_snake[0][1] == item[1]:
+            r_vars.append([item[1], item[0]])
+        if board_snake[0][0] == item[0]:
+            l_vars.append([item[1], item[0]])
+        if board_snake[0][0] == item[1]:
+            l_vars.append(item)
 
-  if l_vars[0] >= r_vars[0]: return (l_vars[0], 0)
-  if l_vars[0] < r_vars[0]: return (r_vars[0], 1)
+    # calculate dominoes weigts
+    temp_list = dom + d_shake
+    for x in temp_list:
+        for i in range(7):
+            weight_of_aidom[i] = weight_of_aidom[i] + x.count(i)
+
+    # select best dominoe to use (for AI)
+    temp_list = l_vars + r_vars
+    max_weight = 0
+    best_choice = []
+    for n in temp_list:
+        if (weight_of_aidom[n[0]] + weight_of_aidom[n[1]]) > max_weight:
+            max_weight = weight_of_aidom[n[0]] + weight_of_aidom[n[1]]
+            best_choice.clear()
+            best_choice.append(n)
+
+    if len(best_choice) > 0:
+        if best_choice[0] in l_vars:
+            return best_choice[0], 0
+        if best_choice[0] in r_vars:
+            return best_choice[0], 1
+    return [[-1, -1], 0]
+
 
 def print_table():
     print("======================================================================")
@@ -121,7 +142,7 @@ while game_run:
 
         # if no right dominoes in the AI List
         if t_list == [-1, -1]:
-            if len(dominoes_list)>0:
+            if len(dominoes_list) > 0:
                 ai_dlist.append(dominoes_list[0])
                 dominoes_list.remove(dominoes_list[0])
             plai_status = "player"
@@ -132,8 +153,10 @@ while game_run:
             else:
                 d_shake.append(t_list)
             for item in ai_dlist:
-                if item == t_list: ai_dlist.remove(item)
-                elif [item[1], item[0]] == t_list: ai_dlist.remove(item)
+                if item == t_list:
+                    ai_dlist.remove(item)
+                elif [item[1], item[0]] == t_list:
+                    ai_dlist.remove(item)
         plai_status = "player"
     # Player Turn
     else:
@@ -142,26 +165,24 @@ while game_run:
 
         cmd = check_user_input()
         if cmd == 0:
-            if len(dominoes_list)>0:
+            if len(dominoes_list) > 0:
                 player_dlist.append(dominoes_list[0])
                 dominoes_list.remove(dominoes_list[0])
             plai_status = "computer"
         else:
             sel_dominoe = player_dlist[abs(cmd) - 1]
-            pass_mode = 0
-            while (sel_dominoe not in r_list):
-            # while pass_mode == 0:
+            while sel_dominoe not in r_list:
                 cmd = check_user_input("Illegal move. Please try again.")
+                sel_dominoe = player_dlist[abs(cmd) - 1]
 
                 if cmd == 0:
                     if len(dominoes_list) > 0:
                         player_dlist.append(dominoes_list[0])
                         dominoes_list.remove(dominoes_list[0])
                         pass_mode = 1
+                        print("PASS and add", dominoes_list[0])
                     plai_status = "computer"
-
-                sel_dominoe = player_dlist[abs(cmd) - 1]
-                # if sel_dominoe in r_list: pass_mode == 1
+                    break
 
             if cmd > 0:
                 if sel_dominoe[0] == d_shake[len(d_shake) - 1][1]:
@@ -170,29 +191,27 @@ while game_run:
                     d_shake.append([sel_dominoe[1], sel_dominoe[0]])
             if cmd < 0:
                 if sel_dominoe[0] == d_shake[0][0]:
-                        d_shake.insert(0, [sel_dominoe[1], sel_dominoe[0]])
+                    d_shake.insert(0, [sel_dominoe[1], sel_dominoe[0]])
                 elif sel_dominoe[1] == d_shake[0][0]:
-                        d_shake.insert(0, [sel_dominoe[0], sel_dominoe[1]])
+                    d_shake.insert(0, [sel_dominoe[0], sel_dominoe[1]])
             player_dlist.remove(sel_dominoe)
             plai_status = "computer"
-
-
 
     # end of game conditions check
     if ai_dlist == [] and player_dlist == []:
         print_table()
         print_game_endmsg("The game is over. It's a draw!")
         game_run = False
-    elif ai_dlist == []:
+    elif not ai_dlist:
         print_table()
         print_game_endmsg("The game is over. The computer won!")
         game_run = False
-    elif player_dlist == []:
+    elif not player_dlist:
         print_table()
         print_game_endmsg("The game is over. You won!")
         game_run = False
 
-    if d_shake[0][0] == d_shake[len(d_shake)-1][1] and game_run != False:
+    if d_shake[0][0] == d_shake[len(d_shake) - 1][1] and game_run is not False:
         counter = 0
         for n in d_shake:
             counter += n.count(d_shake[0][0])
